@@ -1,0 +1,176 @@
+ptc-site/
+│
+├── config.php
+├── register.php
+├── login.php
+├── dashboard.php
+├── view_ads.php
+├── withdraw.php
+├── referral.php
+│
+├── admin/
+│   ├── dashboard.php
+│   ├── add_ads.php
+│   ├── manage_users.php
+│
+└── database.sql
+
+CREATE TABLE users (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ username VARCHAR(50),
+ email VARCHAR(100),
+ password VARCHAR(255),
+ balance DECIMAL(10,2) DEFAULT 0,
+ referrer VARCHAR(50)
+);
+
+CREATE TABLE ads (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ title VARCHAR(100),
+ url TEXT,
+ reward DECIMAL(10,3),
+ duration INT
+);
+
+CREATE TABLE withdrawals (
+ id INT AUTO_INCREMENT PRIMARY KEY,
+ user_id INT,
+ amount DECIMAL(10,2),
+ method VARCHAR(50),
+ status VARCHAR(50)
+);
+<?php
+$conn = new mysqli("localhost","root","","ptc_site");
+
+if($conn->connect_error){
+ die("Connection failed");
+}
+?>
+<?php
+include "config.php";
+
+if(isset($_POST['register'])){
+
+$username=$_POST['username'];
+$email=$_POST['email'];
+$password=password_hash($_POST['password'],PASSWORD_DEFAULT);
+$ref=$_POST['ref'];
+
+$sql="INSERT INTO users(username,email,password,referrer)
+VALUES('$username','$email','$password','$ref')";
+
+$conn->query($sql);
+
+echo "Registration successful";
+}
+?>
+
+<form method="POST">
+<input name="username" placeholder="Username">
+<input name="email" placeholder="Email">
+<input name="password" type="password">
+<input name="ref" placeholder="Referral Username">
+<button name="register">Register</button>
+</form>
+<?php
+include "config.php";
+
+if(isset($_POST['register'])){
+
+$username=$_POST['username'];
+$email=$_POST['email'];
+$password=password_hash($_POST['password'],PASSWORD_DEFAULT);
+$ref=$_POST['ref'];
+
+$sql="INSERT INTO users(username,email,password,referrer)
+VALUES('$username','$email','$password','$ref')";
+
+$conn->query($sql);
+
+echo "Registration successful";
+}
+?>
+
+<form method="POST">
+<input name="username" placeholder="Username">
+<input name="email" placeholder="Email">
+<input name="password" type="password">
+<input name="ref" placeholder="Referral Username">
+<button name="register">Register</button>
+</form>
+<?php
+include "config.php";
+session_start();
+
+$result=$conn->query("SELECT * FROM ads LIMIT 1");
+$ad=$result->fetch_assoc();
+?>
+
+<h2><?php echo $ad['title']; ?></h2>
+
+<iframe src="<?php echo $ad['url']; ?>" width="100%" height="400"></iframe>
+
+<p>Wait <span id="timer"><?php echo $ad['duration']; ?></span> seconds</p>
+
+<button id="claim" style="display:none;">Claim Reward</button>
+
+<script>
+let seconds=<?php echo $ad['duration']; ?>;
+
+let timer=setInterval(function(){
+seconds--;
+document.getElementById("timer").innerHTML=seconds;
+
+if(seconds<=0){
+clearInterval(timer);
+document.getElementById("claim").style.display="block";
+}
+
+},1000);
+</script>
+<?php
+session_start();
+include "config.php";
+
+if(isset($_POST['withdraw'])){
+
+$user=$_SESSION['user'];
+$amount=$_POST['amount'];
+
+$conn->query("INSERT INTO withdrawals(user_id,amount,method,status)
+VALUES('$user','$amount','GCash','pending')");
+
+echo "Withdrawal requested";
+}
+?>
+
+<form method="POST">
+<input name="amount" placeholder="Amount">
+<button name="withdraw">Withdraw via GCash</button>
+</form>
+https://yoursite.com/register.php?ref=username
+$ref=$user['referrer'];
+
+$conn->query("UPDATE users SET balance=balance+0.002 WHERE username='$ref'");
+<?php
+include "../config.php";
+
+if(isset($_POST['add'])){
+
+$title=$_POST['title'];
+$url=$_POST['url'];
+$reward=$_POST['reward'];
+$duration=$_POST['duration'];
+
+$conn->query("INSERT INTO ads(title,url,reward,duration)
+VALUES('$title','$url','$reward','$duration')");
+}
+?>
+
+<form method="POST">
+<input name="title">
+<input name="url">
+<input name="reward">
+<input name="duration">
+<button name="add">Add Ad</button>
+</form>
